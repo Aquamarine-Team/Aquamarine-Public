@@ -21,7 +21,7 @@ use pocketmine\math\Vector3;
 use pocketmine\Player;
 
 class Vex extends FlyingMonster implements ProjectileSource{
-	
+
 	const NETWORK_ID = 105;
 
 	public $width = 0.72;
@@ -30,7 +30,7 @@ class Vex extends FlyingMonster implements ProjectileSource{
 
 	public function initEntity(){
 		parent::initEntity();
-		
+
 		$this->setDamage([0, 0, 0, 0]);
 	}
 
@@ -115,7 +115,6 @@ class Vex extends FlyingMonster implements ProjectileSource{
 					$this->motionZ = $this->getSpeed() * 0.15 * ($z / $diff);
 				}
 			}
-			$this->yaw = rad2deg(-atan2($x / $diff, $z / $diff));
 			$this->pitch = $y == 0 ? 0 : rad2deg(-atan2($y, sqrt($x ** 2 + $z ** 2)));
 		}
 
@@ -177,7 +176,7 @@ class Vex extends FlyingMonster implements ProjectileSource{
 
 	public function attackEntity(Entity $player){
 		if(mt_rand(1, 32) < 4 && $this->distance($player) <= 18){
-			
+
 
 			$ev = new EntityDamageByEntityEvent($this, $player, EntityDamageEvent::CAUSE_ENTITY_ATTACK, $this->getDamage());
 			$player->attack($ev->getFinalDamage(), $ev);

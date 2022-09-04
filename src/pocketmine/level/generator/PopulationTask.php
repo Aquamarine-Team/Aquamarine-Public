@@ -61,10 +61,6 @@ class PopulationTask extends AsyncTask{
 		$this->state = true;
 		$this->levelId = $level->getId();
 		$this->chunk = $chunk->fastSerialize();
-
-		foreach($level->getAdjacentChunks($chunk->getX(), $chunk->getZ()) as $i => $c){
-			$this->{"chunk$i"} = $c !== null ? $c->fastSerialize() : null;
-		}
 	}
 
 	public function onRun(){
@@ -75,39 +71,13 @@ class PopulationTask extends AsyncTask{
 			return;
 		}
 
-		/** @var Chunk[] $chunks */
-		$chunks = [];
-
 		$chunk = Chunk::fastDeserialize($this->chunk);
-
-		for($i = 0; $i < 9; ++$i){
-			if($i === 4){
-				continue;
-			}
-			$xx = -1 + $i % 3;
-			$zz = -1 + (int) ($i / 3);
-			$ck = $this->{"chunk$i"};
-			if($ck === null){
-				$chunks[$i] = new Chunk($chunk->getX() + $xx, $chunk->getZ() + $zz);
-			}else{
-				$chunks[$i] = Chunk::fastDeserialize($ck);
-			}
-		}
 
 		$manager->setChunk($chunk->getX(), $chunk->getZ(), $chunk);
 		if(!$chunk->isGenerated()){
 			$generator->generateChunk($chunk->getX(), $chunk->getZ());
 			$chunk = $manager->getChunk($chunk->getX(), $chunk->getZ());
 			$chunk->setGenerated();
-		}
-
-		foreach($chunks as $i => $c){
-			$manager->setChunk($c->getX(), $c->getZ(), $c);
-			if(!$c->isGenerated()){
-				$generator->generateChunk($c->getX(), $c->getZ());
-				$chunks[$i] = $manager->getChunk($c->getX(), $c->getZ());
-				$chunks[$i]->setGenerated();
-			}
 		}
 
 		$generator->populateChunk($chunk->getX(), $chunk->getZ());
@@ -120,10 +90,6 @@ class PopulationTask extends AsyncTask{
 
 		$this->chunk = $chunk->fastSerialize();
 
-		foreach($chunks as $i => $c){
-			$this->{"chunk$i"} = $c->hasChanged() ? $c->fastSerialize() : null;
-		}
-
 		$manager->cleanChunks();
 	}
 
@@ -135,18 +101,6 @@ class PopulationTask extends AsyncTask{
 			}
 
 			$chunk = Chunk::fastDeserialize($this->chunk);
-
-			for($i = 0; $i < 9; ++$i){
-				if($i === 4){
-					continue;
-				}
-				$c = $this->{"chunk$i"};
-				if($c !== null){
-					$c = Chunk::fastDeserialize($c);
-					$level->generateChunkCallback($c->getX(), $c->getZ(), $this->state ? $c : null);
-				}
-			}
-
 			$level->generateChunkCallback($chunk->getX(), $chunk->getZ(), $this->state ? $chunk : null);
 		}
 	}
